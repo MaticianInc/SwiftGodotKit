@@ -200,9 +200,6 @@ public class UIGodotWindow: UIView {
             }
             app.removeTouchId(id: touchId)
             var location = touch.location(in: self)
-            if !self.layer.frame.contains(location) {
-                continue
-            }
             location.x -= windowLayer.frame.origin.x
             location.y -= windowLayer.frame.origin.y
             touchData.append([ "touchId": touchId, "location": location ])
