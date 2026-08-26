@@ -190,7 +190,7 @@ public class UIGodotAppView: UIView {
                 continue
             }
             var location = touch.location(in: self)
-            if !self.layer.frame.contains(location) {
+            if !renderingLayer.frame.contains(location) {
                 continue
             }
             location.x -= renderingLayer.frame.origin.x
@@ -231,13 +231,13 @@ public class UIGodotAppView: UIView {
                 continue
             }
             var location = touch.location(in: self)
-            if !self.layer.frame.contains(location) {
+            if !renderingLayer.frame.contains(location) {
                 continue
             }
             location.x -= renderingLayer.frame.origin.x
             location.y -= renderingLayer.frame.origin.y
             var prevLocation = touch.previousLocation(in: self)
-            if !self.layer.frame.contains(prevLocation) {
+            if !renderingLayer.frame.contains(prevLocation) {
                 continue
             }
             prevLocation.x -= renderingLayer.frame.origin.x

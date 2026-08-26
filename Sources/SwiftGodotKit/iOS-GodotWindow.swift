@@ -131,7 +131,7 @@ public class UIGodotWindow: UIView {
                 continue
             }
             var location = touch.location(in: self)
-            if !self.layer.frame.contains(location) {
+            if !windowLayer.frame.contains(location) {
                 continue
             }
             location.x -= windowLayer.frame.origin.x
@@ -158,13 +158,13 @@ public class UIGodotWindow: UIView {
                 continue
             }
             var location = touch.location(in: self)
-            if !self.layer.frame.contains(location) {
+            if !windowLayer.frame.contains(location) {
                 continue
             }
             location.x -= windowLayer.frame.origin.x
             location.y -= windowLayer.frame.origin.y
             var prevLocation = touch.previousLocation(in: self)
-            if !self.layer.frame.contains(prevLocation) {
+            if !windowLayer.frame.contains(prevLocation) {
                 continue
             }
             prevLocation.x -= windowLayer.frame.origin.x
