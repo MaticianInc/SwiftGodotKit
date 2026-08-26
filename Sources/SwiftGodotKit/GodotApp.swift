@@ -771,6 +771,21 @@ public class GodotApp: ObservableObject {
     func removeTouchId(id: Int) {
         touches[id] = nil
     }
+
+    /// Cancels every touch this host still has registered.
+    ///
+    /// UIKit orphans an in-flight `UITouch` when its view leaves the window, so
+    /// `touchesCancelled` is never delivered and Godot is left with a pressed touch that
+    /// nothing can clear. Callable directly so an application can recover from a stuck touch.
+    public func cancelActiveTouches() {
+        guard instance != nil, let displayServer = DisplayServerAppleEmbeddedBridge.getSingleton() else { return }
+
+        let windowId = Int32(DisplayServer.mainWindowId)
+        for (id, touch) in touches.enumerated() where touch != nil {
+            removeTouchId(id: id)
+            DisplayServerAppleEmbeddedBridge.touchesCanceled(displayServer, idx: Int32(id), window: windowId)
+        }
+    }
     #endif
 }
 
