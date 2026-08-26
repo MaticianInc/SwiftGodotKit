@@ -260,6 +260,13 @@ public class UIGodotWindow: UIView {
         initGodotWindow()
     }
     
+    public override func willMove(toWindow newWindow: UIWindow?) {
+        if newWindow == nil {
+            app?.cancelActiveTouches()
+        }
+        super.willMove(toWindow: newWindow)
+    }
+
     public override func removeFromSuperview() {
         clearBinding(removeOwnedWindow: true)
         embedded = nil

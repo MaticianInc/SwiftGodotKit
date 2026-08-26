@@ -321,6 +321,13 @@ public class UIGodotAppView: UIView {
         }()
     }
     
+    public override func willMove(toWindow newWindow: UIWindow?) {
+        if newWindow == nil {
+            app?.cancelActiveTouches()
+        }
+        super.willMove(toWindow: newWindow)
+    }
+
     public override func removeFromSuperview() {
         displayLink?.invalidate()
         displayLink = nil
