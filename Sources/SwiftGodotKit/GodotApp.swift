@@ -370,7 +370,7 @@ public class GodotApp: ObservableObject {
 
     func applicationDidBecomeActive() {
         instance?.focusIn()
-        resume()
+        start()
         setApplicationFocus(true)
     }
 
@@ -387,7 +387,6 @@ public class GodotApp: ObservableObject {
 
     func applicationWillEnterForeground() {
         setApplicationPaused(false)
-        start()
     }
     #endif
 
