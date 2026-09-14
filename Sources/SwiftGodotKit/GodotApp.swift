@@ -193,6 +193,10 @@ public class GodotApp: ObservableObject {
         }
 
         #if os(iOS)
+        if UIApplication.shared.applicationState == .background {
+            Logger.App.info("GodotApp.start deferred until the app enters the foreground")
+            return false
+        }
         touches = [UITouch?](repeating: nil, count: maxTouchCount)
         #endif
         let scene = normalizedScene(launchSceneOverride)
@@ -388,6 +392,7 @@ public class GodotApp: ObservableObject {
 
     func applicationWillEnterForeground() {
         setApplicationPaused(false)
+        start()
     }
     #endif
 
