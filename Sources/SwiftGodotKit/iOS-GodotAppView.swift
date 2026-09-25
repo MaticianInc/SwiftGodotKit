@@ -36,6 +36,17 @@ public struct GodotAppView: UIViewRepresentable {
             return view
         }
 
+        prepare(app: app)
+        return view
+    }
+
+    /// Starts the engine on this view's surface before the view is mounted in a window.
+    public func start(app: GodotApp) {
+        prepare(app: app)
+        view.startGodotInstance()
+    }
+
+    private func prepare(app: GodotApp) {
         app.configureLaunch(source: source, scene: scene)
         app.start()
         view.contentScaleFactor = UIScreen.main.scale
@@ -46,7 +57,6 @@ public struct GodotAppView: UIViewRepresentable {
         view.onReady = onReady
         view.onMessage = onMessage
         view.syncCallbackRegistration()
-        return view
     }
 
     public func updateUIView(_ uiView: UIGodotAppView, context: Context) {
@@ -352,8 +362,6 @@ public class UIGodotAppView: UIView {
     }
 
     public override func removeFromSuperview() {
-        displayLink?.invalidate()
-        displayLink = nil
         unregisterCallbacks()
         super.removeFromSuperview()
     }
