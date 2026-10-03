@@ -34,17 +34,6 @@ public struct GodotAppView: UIViewRepresentable {
             return view
         }
 
-        prepare(app: app)
-        return view
-    }
-
-    /// Starts the engine on this view's surface before the view is mounted in a window.
-    public func start(app: GodotApp) {
-        prepare(app: app)
-        view.startGodotInstance()
-    }
-
-    private func prepare(app: GodotApp) {
         app.configureLaunch(source: source, scene: scene)
         app.start()
         view.contentScaleFactor = UIScreen.main.scale
@@ -55,6 +44,7 @@ public struct GodotAppView: UIViewRepresentable {
         view.onReady = onReady
         view.onMessage = onMessage
         view.syncCallbackRegistration()
+        return view
     }
 
     public func updateUIView(_ uiView: UIGodotAppView, context: Context) {
@@ -172,7 +162,6 @@ public class UIGodotAppView: UIView {
                 displayLink.add(to: .current, forMode: RunLoop.Mode.default)
                 self.displayLink = displayLink
             }
-            applyWindowPresence(isInWindow: window != nil)
             if embedded == nil {
                 if let displayServer = DisplayServer.shared as? DisplayServerEmbedded {
                     embedded = displayServer
@@ -336,11 +325,12 @@ public class UIGodotAppView: UIView {
         if newWindow == nil {
             app?.cancelActiveTouches()
         }
-        applyWindowPresence(isInWindow: newWindow != nil)
         super.willMove(toWindow: newWindow)
     }
 
     public override func removeFromSuperview() {
+        displayLink?.invalidate()
+        displayLink = nil
         unregisterCallbacks()
         super.removeFromSuperview()
     }
@@ -367,15 +357,7 @@ public class UIGodotAppView: UIView {
     }
 }
 
-private let windowlessFrameRateRange = CAFrameRateRange(minimum: 5, maximum: 10, preferred: 10)
-
 private extension UIGodotAppView {
-    func applyWindowPresence(isInWindow: Bool) {
-        displayLink?.preferredFrameRateRange = isInWindow ? .default : windowlessFrameRateRange
-        guard let instance = app?.instance, instance.isStarted() else { return }
-        RenderingServer.renderLoopEnabled = isInWindow
-    }
-
     func emitDisplayServerNotEmbeddedWarning(context: String) {
         guard !didEmitDisplayServerNotEmbeddedWarning else { return }
         didEmitDisplayServerNotEmbeddedWarning = true
