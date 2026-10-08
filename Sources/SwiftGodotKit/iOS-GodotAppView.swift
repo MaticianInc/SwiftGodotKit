@@ -402,8 +402,6 @@ private let windowlessFrameRateRange = CAFrameRateRange(minimum: 5, maximum: 10,
 private extension UIGodotAppView {
     func applyWindowPresence(isInWindow: Bool) {
         displayLink?.preferredFrameRateRange = isInWindow ? .default : windowlessFrameRateRange
-        guard let instance = app?.instance, instance.isStarted() else { return }
-        RenderingServer.renderLoopEnabled = isInWindow
     }
 
     func emitDisplayServerNotEmbeddedWarning(context: String) {
