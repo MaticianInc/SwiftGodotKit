@@ -6,6 +6,7 @@
 import SwiftUI
 import SwiftGodot
 import Foundation
+import Metal
 import OSLog
 #if canImport(Dispatch)
 import Dispatch
@@ -107,8 +108,8 @@ public class GodotApp: ObservableObject {
     ///  - godotPackPath: the directory where a scene can be created from, if it is not
     /// provided, this will try the `Bundle.main.resourcePath` directory, and if that is nil,
     /// then current "." directory will be used as the basis
-    ///  - renderingDriver: the name of the Godot driver to use. The default is `metal` on devices and macOS, and `opengl3` in the iOS Simulator.
-    ///  - renderingMethod: the Godot rendering method to use. The default is `mobile` on devices and macOS, and `gl_compatibility` in the iOS Simulator.
+    ///  - renderingDriver: the name of the Godot driver to use. The default is `metal` on Apple4 GPUs (A11) and newer, and `opengl3` on older GPUs and in the iOS Simulator.
+    ///  - renderingMethod: the Godot rendering method to use. The default is `mobile` on Apple4 GPUs (A11) and newer, and `gl_compatibility` on older GPUs and in the iOS Simulator.
     ///  - displayDriver: the Godot display driver, defaults to `embedded`
     public init (
         packFile: String,
@@ -124,8 +125,10 @@ public class GodotApp: ObservableObject {
         self.renderingDriver = renderingDriver ?? "opengl3"
         self.renderingMethod = renderingMethod ?? "gl_compatibility"
         #else
-        self.renderingDriver = renderingDriver ?? "metal"
-        self.renderingMethod = renderingMethod ?? "mobile"
+        // Godot's Metal renderer crashes at startup on A10 GPUs.
+        let supportsApple4 = MTLCreateSystemDefaultDevice()!.supportsFamily(.apple4)
+        self.renderingDriver = renderingDriver ?? (supportsApple4 ? "metal" : "opengl3")
+        self.renderingMethod = renderingMethod ?? (supportsApple4 ? "mobile" : "gl_compatibility")
         #endif
         self.displayDriver = displayDriver
         self.extraArgs = extraArgs
