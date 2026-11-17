@@ -10,6 +10,14 @@ import SwiftGodot
 import libgodot
 
 #if os(iOS)
+// Godot's GL layer decides whether to create an OpenGL context from these project settings
+// (base and iOS override), not from the --rendering-method argument we launch with. Godot
+// only exposes project settings by string path.
+private let renderingMethodSettings = [
+    "rendering/renderer/rendering_method",
+    "rendering/renderer/rendering_method.mobile",
+]
+
 public struct GodotAppView: UIViewRepresentable {
     @SwiftUI.Environment(\.godotApp) var app: GodotApp?
     var view = UIGodotAppView(frame: CGRect.zero)
@@ -182,11 +190,10 @@ public class UIGodotAppView: UIView {
         if let instance = app.instance {
             let layerPointer = Unmanaged.passUnretained(renderingLayer).toOpaque()
             if !didInitializeRenderingLayer {
-                // Godot's GL layer decides whether to create an OpenGL context from this project
-                // setting, not from the --rendering-method argument we launched with, so make them match.
                 let renderingMethod = Variant(app.renderingMethod)
-                ProjectSettings.setSetting(name: "rendering/renderer/rendering_method", value: renderingMethod)
-                ProjectSettings.setSetting(name: "rendering/renderer/rendering_method.mobile", value: renderingMethod)
+                for setting in renderingMethodSettings {
+                    ProjectSettings.setSetting(name: setting, value: renderingMethod)
+                }
                 libgodot.libgodot_ios_initialize_rendering_layer(layerPointer)
                 didInitializeRenderingLayer = true
             }

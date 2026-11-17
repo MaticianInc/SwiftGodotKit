@@ -62,41 +62,6 @@ private struct ViewCallback {
     var didSendReady = false
 }
 
-extension GodotApp {
-    /// The renderer `GodotApp` uses when `init` is not given a rendering driver or method.
-    public enum DefaultRenderer {
-        case metal
-        case openGL
-
-        var driver: String {
-            switch self {
-            case .metal: "metal"
-            case .openGL: "opengl3"
-            }
-        }
-
-        var method: String {
-            switch self {
-            case .metal: "mobile"
-            case .openGL: "gl_compatibility"
-            }
-        }
-    }
-
-    public static let defaultRenderer: DefaultRenderer = {
-        #if os(iOS) && targetEnvironment(simulator)
-        return .openGL
-        #else
-        guard let device = MTLCreateSystemDefaultDevice() else {
-            Logger.App.error("defaultRenderer: no Metal device available, falling back to OpenGL")
-            return .openGL
-        }
-        // Godot's Metal renderer crashes at startup on A10 GPUs.
-        return device.supportsFamily(.apple4) ? .metal : .openGL
-        #endif
-    }()
-}
-
 /// You create a single Godot App per application, this contains your game PCK
 @Observable
 public class GodotApp: ObservableObject {
@@ -822,6 +787,41 @@ public class GodotApp: ObservableObject {
         }
     }
     #endif
+}
+
+extension GodotApp {
+    /// The renderer `GodotApp` uses when `init` is not given a rendering driver or method.
+    public enum DefaultRenderer {
+        case metal
+        case openGL
+
+        var driver: String {
+            switch self {
+            case .metal: "metal"
+            case .openGL: "opengl3"
+            }
+        }
+
+        var method: String {
+            switch self {
+            case .metal: "mobile"
+            case .openGL: "gl_compatibility"
+            }
+        }
+    }
+
+    public static let defaultRenderer: DefaultRenderer = {
+        #if os(iOS) && targetEnvironment(simulator)
+        return .openGL
+        #else
+        guard let device = MTLCreateSystemDefaultDevice() else {
+            Logger.App.error("defaultRenderer: no Metal device available, falling back to OpenGL")
+            return .openGL
+        }
+        // Godot's Metal renderer crashes at startup on A10 GPUs.
+        return device.supportsFamily(.apple4) ? .metal : .openGL
+        #endif
+    }()
 }
 
 public extension EnvironmentValues {
