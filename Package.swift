@@ -26,7 +26,7 @@ let package = Package(
         .executable(name: "TrivialSample", targets: ["TrivialSample"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/migueldeicaza/SwiftGodot", revision: "c3303eadffe4413eaab359983ff7cd759fd7f351"),
+        .package(url: "https://github.com/migueldeicaza/SwiftGodotBinary", exact: "0.99.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -34,7 +34,7 @@ let package = Package(
         .target(
             name: "SwiftGodotKit",
             dependencies: [
-                "SwiftGodot",
+                .product(name: "SwiftGodot", package: "SwiftGodotBinary"),
                 "libgodot",
                 .target(name: "apple_plugin_stubs", condition: .when(platforms: [.iOS])),
                 .target(name: "mac_libgodot", condition: .when(platforms: [.macOS])),
