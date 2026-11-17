@@ -182,6 +182,11 @@ public class UIGodotAppView: UIView {
         if let instance = app.instance {
             let layerPointer = Unmanaged.passUnretained(renderingLayer).toOpaque()
             if !didInitializeRenderingLayer {
+                // Godot's GL layer decides whether to create an OpenGL context from this project
+                // setting, not from the --rendering-method argument we launched with, so make them match.
+                let renderingMethod = Variant(app.renderingMethod)
+                ProjectSettings.setSetting(name: "rendering/renderer/rendering_method", value: renderingMethod)
+                ProjectSettings.setSetting(name: "rendering/renderer/rendering_method.mobile", value: renderingMethod)
                 libgodot.libgodot_ios_initialize_rendering_layer(layerPointer)
                 didInitializeRenderingLayer = true
             }
