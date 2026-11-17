@@ -108,8 +108,8 @@ public class GodotApp: ObservableObject {
     ///  - godotPackPath: the directory where a scene can be created from, if it is not
     /// provided, this will try the `Bundle.main.resourcePath` directory, and if that is nil,
     /// then current "." directory will be used as the basis
-    ///  - renderingDriver: the name of the Godot driver to use. The default is `metal` on Apple4 GPUs (A11) and newer, and `opengl3` on older GPUs and in the iOS Simulator.
-    ///  - renderingMethod: the Godot rendering method to use. The default is `mobile` on Apple4 GPUs (A11) and newer, and `gl_compatibility` on older GPUs and in the iOS Simulator.
+    ///  - renderingDriver: the name of the Godot driver to use. The default follows `defaultRenderer`: `metal` on Apple4 GPUs (A11) and newer, and `opengl3` on older GPUs and in the iOS Simulator.
+    ///  - renderingMethod: the Godot rendering method to use. The default follows `defaultRenderer`: `mobile` on Apple4 GPUs (A11) and newer, and `gl_compatibility` on older GPUs and in the iOS Simulator.
     ///  - displayDriver: the Godot display driver, defaults to `embedded`
     public init (
         packFile: String,
@@ -121,15 +121,8 @@ public class GodotApp: ObservableObject {
     ) {
         let dir = godotPackPath ?? Bundle.main.resourcePath ?? "."
         path = "\(dir)/\(packFile)"
-        #if os(iOS) && targetEnvironment(simulator)
-        self.renderingDriver = renderingDriver ?? "opengl3"
-        self.renderingMethod = renderingMethod ?? "gl_compatibility"
-        #else
-        // Godot's Metal renderer crashes at startup on A10 GPUs.
-        let supportsApple4 = MTLCreateSystemDefaultDevice()!.supportsFamily(.apple4)
-        self.renderingDriver = renderingDriver ?? (supportsApple4 ? "metal" : "opengl3")
-        self.renderingMethod = renderingMethod ?? (supportsApple4 ? "mobile" : "gl_compatibility")
-        #endif
+        self.renderingDriver = renderingDriver ?? Self.defaultRenderer.driver
+        self.renderingMethod = renderingMethod ?? Self.defaultRenderer.method
         self.displayDriver = displayDriver
         self.extraArgs = extraArgs
         
@@ -794,6 +787,41 @@ public class GodotApp: ObservableObject {
         }
     }
     #endif
+}
+
+extension GodotApp {
+    /// The renderer `GodotApp` uses when `init` is not given a rendering driver or method.
+    public enum DefaultRenderer {
+        case metal
+        case openGL
+
+        var driver: String {
+            switch self {
+            case .metal: "metal"
+            case .openGL: "opengl3"
+            }
+        }
+
+        var method: String {
+            switch self {
+            case .metal: "mobile"
+            case .openGL: "gl_compatibility"
+            }
+        }
+    }
+
+    public static let defaultRenderer: DefaultRenderer = {
+        #if os(iOS) && targetEnvironment(simulator)
+        return .openGL
+        #else
+        guard let device = MTLCreateSystemDefaultDevice() else {
+            Logger.App.error("defaultRenderer: no Metal device available, falling back to OpenGL")
+            return .openGL
+        }
+        // Godot's Metal renderer crashes at startup on A10 GPUs.
+        return device.supportsFamily(.apple4) ? .metal : .openGL
+        #endif
+    }()
 }
 
 public extension EnvironmentValues {
